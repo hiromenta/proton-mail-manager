@@ -9,11 +9,23 @@ try {
     const messages = await getMails(client, 'INBOX');
     const checkedMessages = await getMails(client, 'Labels/Checked');
 
+    console.log('\nMessages');
+    console.log(messages);
+    console.log(checkedMessages);
+
     const messagesIds = messages.map(m => m.envelope?.messageId);
     const checkedMessagesIds = checkedMessages.map(m => m.envelope?.messageId);
 
+    console.log('\nIDs');
+    console.log(messagesIds);
+    console.log(checkedMessagesIds);
+
     const uncheckedIds = messagesIds.filter(id => !checkedMessagesIds.includes(id));
     const uncheckedMessages = messages.filter(msg => uncheckedIds.includes(msg.envelope?.messageId));
+
+    console.log('\nUnchecked');
+    console.log(uncheckedIds);
+    console.log(uncheckedMessages);
 
     for (const message of uncheckedMessages) {
         const senderName = message.envelope?.from?.[0].name;
@@ -31,8 +43,9 @@ try {
             case 'temp':
             case 'ad':
             case 'scam':
-                await deleteMail(client, message);
-                console.log(message.envelope?.subject, '- deleted');
+                if (await deleteMail(client, message)) {
+                    console.log(message.envelope?.subject, '- deleted');
+                }
                 break;
             default:
                 const res = await getMailLabel(client, message);

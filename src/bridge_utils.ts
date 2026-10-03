@@ -29,7 +29,20 @@ export async function deleteMail(client: ImapFlow, message: FetchMessageObject) 
     const lock = await client.getMailboxLock('INBOX');
 
     try {
-        await client.messageFlagsAdd(message.uid, ['\\Deleted']);
+        const foundMessage = await client.search({ uid: message.uid })
+
+        if (!foundMessage) {
+            return;
+        }
+
+        const result = await client.messageMove(foundMessage[0], 'Trash');
+
+        const sender = message.envelope?.from?.[0].name;
+        const subject = message.envelope?.subject;
+
+        console.log('Deleting', subject, `(${sender})`, '- Result:', result);
+
+        return result;
     } finally {
         lock.release();
     }
@@ -41,12 +54,20 @@ export async function addLabel(client: ImapFlow, message: FetchMessageObject, la
     const lock = await client.getMailboxLock('INBOX');
 
     try {
-        const result = await client.messageMove(message.uid, `Labels/${label}`);
+        const foundMessage = await client.search({ uid: message.uid })
+
+        if (!foundMessage) {
+            return;
+        }
+
+        const result = await client.messageMove(foundMessage[0], `Labels/${label}`);
 
         const sender = message.envelope?.from?.[0].name;
         const subject = message.envelope?.subject;
 
         console.log('Moving', subject, `(${sender})`, 'to', label, '- Result:', result);
+
+        return result;
     } finally {
         lock.release();
     }
