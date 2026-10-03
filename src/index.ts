@@ -9,11 +9,11 @@ try {
     const messages = await getMails(client, 'INBOX');
     const checkedMessages = await getMails(client, 'Labels/Checked');
 
-    const messagesIds = messages.map(m => m.id);
-    const checkedMessagesIds = checkedMessages.map(m => m.id);
+    const messagesIds = messages.map(m => m.envelope?.messageId);
+    const checkedMessagesIds = checkedMessages.map(m => m.envelope?.messageId);
 
     const uncheckedIds = messagesIds.filter(id => !checkedMessagesIds.includes(id));
-    const uncheckedMessages = messages.filter(msg => uncheckedIds.includes(msg.id));
+    const uncheckedMessages = messages.filter(msg => uncheckedIds.includes(msg.envelope?.messageId));
 
     for (const message of uncheckedMessages) {
         const senderName = message.envelope?.from?.[0].name;
