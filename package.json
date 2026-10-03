@@ -1,0 +1,26 @@
+{
+  "name": "proton-mail-manager",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "npm run connect-bridge && tsx src/index.ts",
+    "connect-bridge": "tsx src/connect_bridge.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@typesafe-ai/sdk": "^0.6.0",
+    "imapflow": "^1.7.8",
+    "mailparser": "^3.9.21"
+  },
+  "devDependencies": {
+    "@types/mailparser": "^3.9.0",
+    "@types/node": "^26.6.4",
+    "dotenv": "^18.0.5",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
+  }
+}
