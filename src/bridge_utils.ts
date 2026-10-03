@@ -168,7 +168,7 @@ export async function getMailLabel(client: ImapFlow, message: FetchMessageObject
 
     if (urgentAnswer.noul > 0.5) {
         console.log('URGENTE');
-        await addLabel(client, message, 'Urgente');
+        await addLabel(client, message, 'Urgent');
     }
 
     return { label, urgent: urgentAnswer.noul > 0.5 };
