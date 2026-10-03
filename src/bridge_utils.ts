@@ -1,5 +1,5 @@
 import { FetchMessageObject, ImapFlow } from "imapflow";
-import { ask, JevChoiceAnswer, JevNoulAnswer, JevQuestionType, JevRequest } from "./jev_utils.js";
+import { ask, JevChoiceAnswer, JevNoulAnswer, JevRequest } from "./jev_utils.js";
 
 async function failCheckMailbox(client: ImapFlow, mailbox: string) {
     const mailboxesObjects = await client.list();
@@ -37,8 +37,19 @@ export async function deleteMail(client: ImapFlow, message: FetchMessageObject) 
 
 export async function addLabel(client: ImapFlow, message: FetchMessageObject, label: string) {
     await failCheckMailbox(client, `Labels/${label}`);
-    const result = await client.messageMove(message.uid, `Labels/${label}`);
-    console.log('Move result:', result);
+
+    const lock = await client.getMailboxLock('INBOX');
+
+    try {
+        const result = await client.messageMove(message.uid, `Labels/${label}`);
+
+        const sender = message.envelope?.from?.[0].name;
+        const subject = message.envelope?.subject;
+
+        console.log('Moving', subject, `(${sender})`, 'to', label, '- Result:', result);
+    } finally {
+        lock.release();
+    }
 }
 
 export async function getMailType(client: ImapFlow, message: FetchMessageObject): Promise<string | undefined> {
@@ -68,12 +79,13 @@ export async function getMailType(client: ImapFlow, message: FetchMessageObject)
     const response = await ask(request);
 
     if (!response.answers) {
+        console.log(response, '\n\nNo answers for', subject, `(${from?.[0].name})\n\n`);
         return;
     }
 
     const answer = (response.answers['email_description'] as JevChoiceAnswer);
 
-    console.log('Tipo di email:', answer.choice);
+    console.log('Email:', subject, `(${from?.[0].name})`, '- Tipo:', answer.choice);
 
     if (answer.confidence <= 0.5) {
         console.log('Non abbastanza sicuro del risultato');
@@ -119,6 +131,7 @@ export async function getMailLabel(client: ImapFlow, message: FetchMessageObject
     const response = await ask(request);
 
     if (!response.answers) {
+        console.log(response, '\n\nNo answers for', subject, `(${from?.[0].name})\n\n`);
         return;
     }
 
@@ -128,7 +141,7 @@ export async function getMailLabel(client: ImapFlow, message: FetchMessageObject
     const labelRaw = labelAnswer.choice.replaceAll('_', ' ');
     const label = labelRaw[0].toUpperCase() + labelRaw.slice(1);
 
-    console.log('Etichetta email:', label);
+    console.log('Email:', subject, `(${from?.[0].name})`, '- Etichetta:', label);
 
     await addLabel(client, message, label);
 

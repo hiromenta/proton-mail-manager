@@ -1,6 +1,5 @@
 import { connectBridge } from './connect_bridge.js';
 import { deleteMail, getMailLabel, getMails, getMailType } from './bridge_utils.js';
-import { ask, JevChoiceAnswer, JevRequest } from './jev_utils.js';
 
 const client = await connectBridge();
 
